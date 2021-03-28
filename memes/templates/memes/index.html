@@ -1,0 +1,209 @@
+{% load crispy_forms_tags %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+            integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1"
+            crossorigin="anonymous">
+
+
+        <title>XMeme</title>
+
+        <!-- Icon of Website -->
+        <link rel="icon" type="image/png"
+            href="https://img.icons8.com/color/48/000000/xbox-x--v1.png" />
+
+        <!-- Googlefont -->
+        <link rel="preconnect" href="https://fonts.gstatic.com">
+        <link
+            href="https://fonts.googleapis.com/css2?family=Yusei+Magic&display=swap"
+            rel="stylesheet">
+        <link
+            href="https://fonts.googleapis.com/css2?family=Dosis:wght@600&display=swap"
+            rel="stylesheet">
+
+        <!-- Jquery CDN -->
+        <script
+            src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    </head>
+
+    <body>
+        <div id="front-container">
+            <h2><b>Meme-</b>Stream</h2>
+            <form id="p-form" class="form-control" method="POST">
+                {% csrf_token %}
+                {{ form|crispy }}
+                <br>
+                <center>
+                    <button type="submit" class="btn btn-primary">Submit Your
+                        Meme</button>
+                </center>
+            </form>
+
+            <div id="alert-box"></div>
+            <div id="all-memes-container">
+                {% for meme in allmemes|slice:":10" %}
+                <div id="second-container">
+                    <div id="meme-container">
+                        <h5>{{meme.caption}}</h5>
+                        <h6>by - {{meme.name}}</h6>
+                        <img alt="img" src="{{meme.url}}"
+                            onerror="this.src='./static/images/default.jpg';">
+                    </div>
+                    <div>
+                        <button
+                            onclick="getId('{{meme.id}}','{{meme.name}}','{{meme.caption}}','{{meme.url}}')"
+                            type="button" class="btn btn-primary"
+                            data-bs-toggle="modal"
+                            data-bs-target="#exampleModal" id="meme-edit-btn">Edit</button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="modal fade" id="exampleModal" tabindex="-1"
+                aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Update
+                                Meme</h5>
+                            <button type="button" class="btn-close"
+                                data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form method="POST" id="u-form"
+                                class="form-control">
+                                {% csrf_token %}
+                                <div class="mb-6">
+                                    <label for="meme-name" class="form-label">Name</label>
+                                    <input readonly required type="text"
+                                        id="meme-name" class="form-control">
+                                </div>
+                                <div class="mb-6">
+                                    <label for="meme-caption"
+                                        class="form-label">Caption</label>
+                                    <input required type="text"
+                                        class="form-control" id="meme-caption">
+                                </div>
+                                <div class="mb-6">
+                                    <label for="meme-url" class="form-label">Url</label>
+                                    <input required type="url"
+                                        class="form-control" id="meme-url">
+                                </div>
+                                <div id="alert-box-2"></div>
+                                <br>
+                                <button type="submit" class="btn btn-primary">Submit</button>
+                                <button type="button" id="close-btn"
+                                    data-bs-dismiss="modal" class="btn
+                                    btn-secondary">Close</button>
+                            </form>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+
+        <script>
+
+        </script>
+        <link rel="stylesheet" href="{% static 'css/index.css' %}">
+        <script src="{% static 'js/main.js' %}"></script>
+        <script
+            src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"
+            integrity="sha384-q2kxQ16AaE6UbzuKqyBE9/u/KzioAlnx2maXQHiDX9d4/zp8Ok3f+M7DPm+Ib6IU"
+            crossorigin="anonymous">
+        </script>
+        <script
+            src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.min.js"
+            integrity="sha384-pQQkAEnwaBkjpqZ8RU1fF1AKtTcHJwFl3pblpTlHXybJjHpMYo79HY3hIi4NKxyj"
+            crossorigin="anonymous">
+        </script>
+        <script>
+
+            // Script for updating meme content.
+            var global_id = 0;
+
+            let meme_name = document.getElementById("meme-name");
+            let meme_caption = document.getElementById("meme-caption");
+            let meme_url = document.getElementById("meme-url");
+            const uform = document.getElementById("u-form");
+            const closebtn = document.getElementById("close-btn");
+            const alertbox2 = document.getElementById("alert-box-2");
+            const handleAlertsUpdates = (type, text) => {
+                alertbox2.innerHTML = `<div class="alert alert-${type}" role="alert">
+                                        ${text}
+                                    </div>`;
+            };
+            function getId(editedid,name,caption,url) {
+                meme_name.value = name;
+                meme_caption.value = caption;
+                meme_url.value = url;
+                global_id = editedid;
+            }
+            uform.addEventListener("submit", (e) => {
+                e.preventDefault();
+                const fd = new FormData();
+                fd.append("csrfmiddlewaretoken", csrf[0].value);
+                fd.append("name", meme_name.value);
+                fd.append("caption", meme_caption.value);
+                fd.append("url", meme_url.value);
+
+                $.ajax({
+                    type: "PATCH",
+                    url: "http://127.0.0.1:8081/memes/" + global_id,
+                    enctype: "multipart/form-data",
+                    data: fd,
+                    success: function (response) {
+                        console.log(response);
+                        $("#all-memes-container").load(location.href + " #all-memes-container");
+                        const sText = `Your Meme is live now`;
+                        handleAlertsUpdates("success", sText);
+                        setTimeout(() => {
+                            alertbox2.innerHTML = "";
+                            meme_name.value = "";
+                            meme_caption.value = "";
+                            meme_url.value = "";
+                            closebtn.click();
+                        }, 500);
+                    },
+                    error: function (error) {
+                        if (error.statusText == "Conflict") {
+                            handleAlertsUpdates("danger", "Meme alerady exist");
+                        } else if(error.statusText == "Method Not Allowed") {
+                            handleAlertsUpdates("danger", "Enter a Valid Url");
+                        }
+                        else{
+                            handleAlertsUpdates("danger", "Server is Down");                            
+                        }
+                        setTimeout(() => {
+                            alertbox2.innerHTML = "";
+                        },1000);
+
+                    },
+                    cache: false,
+                    contentType: false,
+                    processData: false,
+                });
+            });
+
+        </script>
+        <script
+            src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW"
+            crossorigin="anonymous">
+        </script>
+
+    </body>
+
+</html>
